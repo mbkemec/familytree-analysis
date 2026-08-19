@@ -65,3 +65,59 @@ The generated files are:
 * `sample.log` — PLINK execution log
 
 The sample sex and phenotype are currently unspecified, so PLINK reports the individual as having ambiguous sex and no phenotype. This does not affect the initial autosomal analyses.
+
+# PLINK Sample Statistics
+
+After creating the binary PLINK dataset, basic sample-level statistics were calculated with `scripts/plink_stats.sh`.
+
+The script currently runs:
+
+```bash
+plink \
+  --bfile ../results/plink/sample \
+  --missing \
+  --out ../results/plink/missingness
+
+plink \
+  --bfile ../results/plink/sample \
+  --het \
+  --out ../results/plink/heterozygosity
+```
+
+## Missingness
+
+PLINK reported:
+
+```text
+N_MISS = 12408
+N_GENO = 612272
+F_MISS = 0.02027
+```
+
+This means that 12,408 of the 612,272 autosomal genotype calls are missing, corresponding to an autosomal missing genotype rate of approximately 2.03%.
+
+The file `missingness.imiss` contains sample-level missingness statistics, while `missingness.lmiss` contains variant-level missingness.
+
+Since the current dataset contains only one individual, each variant in `missingness.lmiss` currently has either:
+
+* `F_MISS = 0` if the genotype is present
+* `F_MISS = 1` if the genotype is missing
+
+Variant-level missingness will become more informative after the sample is combined with a multi-sample reference dataset.
+
+## Heterozygosity
+
+PLINK `--het` was also tested on the current dataset. The output was:
+
+```text
+O(HOM) = 0
+E(HOM) = 53620
+N(NM) = 107230
+F = -1
+```
+
+This result should not be interpreted as a biological heterozygosity estimate.
+
+PLINK calculates expected homozygosity using allele frequencies estimated from the analyzed dataset. Since the current PLINK dataset contains only one individual, reliable population allele frequencies cannot be estimated.
+
+For this reason, the current `--het` result is retained only as a pipeline test. Heterozygosity will be recalculated and interpreted after the sample is combined with an appropriate multi-sample population reference panel.
