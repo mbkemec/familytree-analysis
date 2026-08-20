@@ -121,3 +121,11 @@ This result should not be interpreted as a biological heterozygosity estimate.
 PLINK calculates expected homozygosity using allele frequencies estimated from the analyzed dataset. Since the current PLINK dataset contains only one individual, reliable population allele frequencies cannot be estimated.
 
 For this reason, the current `--het` result is retained only as a pipeline test. Heterozygosity will be recalculated and interpreted after the sample is combined with an appropriate multi-sample population reference panel.
+
+## Genome Build
+
+FamilyTreeDNA Family Finder autosomal raw data uses GRCh37 (hg19) genomic coordinates. Therefore, downstream reference datasets are kept in GRCh37 whenever possible to avoid unnecessary coordinate liftover.
+
+**Reference:** [FamilyTreeDNA – Downloading Your Family Finder Data](https://help.familytreedna.com/hc/en-us/articles/14860944283407-Downloading-Your-Family-Finder-Data)
+
+
