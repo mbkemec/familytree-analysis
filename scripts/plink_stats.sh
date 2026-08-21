@@ -2,12 +2,8 @@
 
 input="../results/plink/sample"
 
-plink \
-  --bfile "$input" \
+plink2 \
+  --pfile "$input" \
   --missing \
   --out ../results/plink/missingness
 
-plink \
-  --bfile "$input" \
-  --het \
-  --out ../results/plink/heterozygosity

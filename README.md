@@ -235,3 +235,120 @@ uses PLINK 2.
 - The 1000 Genomes Project Consortium (2015). A global reference for human
   genetic variation. Nature 526, 68–74.
   https://doi.org/10.1038/nature15393
+
+### Heterozygosity
+
+PLINK 2 does not calculate heterozygosity from the current single-sample dataset because reliable allele frequencies cannot be estimated from one individual.
+
+PLINK 2 requires either a sufficiently large sample set or an external allele-frequency reference file for this calculation.
+
+For this reason, heterozygosity analysis is postponed until the FamilyTreeDNA sample has been harmonized with the 1000 Genomes reference panel. This avoids interpreting allele-frequency-dependent statistics from an inappropriate single-sample dataset.
+
+# Shared Variant Identification
+
+Before combining the FamilyTreeDNA sample with the 1000 Genomes reference panel, variants shared between the two datasets are identified.
+
+The FamilyTreeDNA PLINK 2 dataset contains:
+
+```text
+612,272 autosomal variants
+```
+
+Using `scripts/shared_variants.sh`, these variant IDs are compared against the 1000 Genomes Phase 3 reference panel with PLINK 2.
+
+The reference panel contains:
+
+```text
+84,805,772 variants
+```
+
+After extracting reference variants whose IDs are present in the FamilyTreeDNA sample, PLINK 2 identified:
+
+```text
+586,909 shared variants
+```
+
+This corresponds to approximately 95.9% of the autosomal variants in the FamilyTreeDNA sample.
+
+The high overlap indicates that the 1000 Genomes Phase 3 reference panel provides good coverage of the SNPs present in the FamilyTreeDNA array data and is suitable for downstream population-genetic comparison.
+
+The script produces:
+
+```text
+results/plink/sample_variants.snplist
+results/plink/shared_variants.snplist
+```
+
+`sample_variants.snplist` contains the autosomal variant IDs present in the FamilyTreeDNA sample.
+
+`shared_variants.snplist` contains the subset of these variants also found in the 1000 Genomes reference panel.
+
+Variant ID overlap alone is not sufficient for merging the datasets. Before combining the sample with the reference panel, the shared variants must also be checked for:
+
+* chromosome and genomic position agreement;
+* allele compatibility;
+* strand orientation;
+* strand-ambiguous A/T and C/G variants;
+* duplicate variant IDs or genomic positions.
+
+These checks are performed before PCA or other population-level analyses to avoid introducing mismatched genotypes into the combined dataset.
+
+### Variant Position Check
+
+Shared variants were checked with:
+
+`scripts/check_variant_match.py`
+
+The script compares chromosome and position between the FamilyTreeDNA sample
+and the corresponding 1000 Genomes variants.
+
+Results:
+
+- Position matches: 586,803
+- Position mismatches: 106
+- Position agreement: ~99.98%
+
+Mismatching variants are saved to:
+
+`results/plink/position_mismatches.txt`
+
+Most mismatches differ by approximately one base pair, likely due to differences
+in variant representation or normalization. These variants will be excluded
+before downstream harmonization.
+
+The 586,803 position-matched variants are used for the next allele and strand
+compatibility check.
+
+### Allele Compatibility and Clean Variant Set
+
+Allele compatibility was checked with:
+
+`scripts/check_alleles.py`
+
+Observed FamilyTreeDNA genotype alleles were compared with the corresponding
+1000 Genomes REF/ALT alleles after excluding position mismatches.
+
+Results:
+
+- Compatible alleles: 578,946
+- Ambiguous A/T or C/G: 5,099
+- Allele mismatches: 0
+
+A/T and C/G variants are strand-ambiguous and are therefore excluded from the
+dataset used for population analysis.
+
+The final variant list was created with:
+
+`scripts/clean_variant_list.py`
+
+Starting from 586,909 shared variants, the script removed:
+
+- 106 position-mismatched variants
+- 5,187 strand-ambiguous variants
+
+This produced:
+
+`results/plink/clean_variants.snplist`
+
+containing **581,616 variants** for downstream harmonization and population
+analysis.

@@ -3,7 +3,7 @@
 input="../results/plink/sample"
 output="../results/plink/sample"
 
-plink \
-  --file "$input" \
-  --make-bed \
+plink2 \
+  --pedmap "$input" \
+  --make-pgen \
   --out "$output"
