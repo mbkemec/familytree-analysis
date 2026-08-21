@@ -3,11 +3,11 @@
 mkdir -p ../reference/1kg
 cd ../reference/1kg
 
-base_url="http://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502"
+wget -c "https://www.dropbox.com/s/y6ytfoybz48dc0u/all_phase3.pgen.zst?dl=1" \
+  -O all_phase3.pgen.zst
 
-wget -c "$base_url/integrated_call_samples_v3.20130502.ALL.panel"
+wget -c "https://www.dropbox.com/s/odlexvo8fummcvt/all_phase3.pvar.zst?dl=1" \
+  -O all_phase3.pvar.zst
 
-for chr in {1..22}
-do
-    wget -c "$base_url/ALL.chr${chr}.phase3_shapeit2_mvncall_integrated_v5b.20130502.genotypes.vcf.gz"
-done
+wget -c "https://www.dropbox.com/scl/fi/haqvrumpuzfutklstazwk/phase3_corrected.psam?rlkey=0yyifzj2fb863ddbmsv4jkeq6&dl=1" \
+  -O all_phase3.psam

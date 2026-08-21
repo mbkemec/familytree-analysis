@@ -129,3 +129,109 @@ FamilyTreeDNA Family Finder autosomal raw data uses GRCh37 (hg19) genomic coordi
 **Reference:** [FamilyTreeDNA – Downloading Your Family Finder Data](https://help.familytreedna.com/hc/en-us/articles/14860944283407-Downloading-Your-Family-Finder-Data)
 
 
+## Population Reference Dataset
+
+Population-level analyses require a reference dataset containing individuals
+from known populations. The FamilyTreeDNA autosomal dataset contains only one
+individual, so population structure and ancestry cannot be evaluated from the
+sample alone.
+
+For this purpose, the 1000 Genomes Project Phase 3 dataset provided through the
+official PLINK resources is used as the population reference.
+
+### Why 1000 Genomes Phase 3?
+
+The reference panel contains 2,504 individuals from multiple populations and
+provides a population context for downstream analyses such as PCA.
+
+Another important consideration is genome-build compatibility. The
+FamilyTreeDNA autosomal data uses GRCh37 coordinates. The selected 1000 Genomes
+Phase 3 resource is also based on GRCh37, avoiding an unnecessary coordinate
+liftover step.
+
+The reference dataset will not be compared directly using all available
+variants. The complete reference contains substantially more variants than the
+FamilyTreeDNA SNP array. Only compatible variants shared between the sample and
+the reference panel will be retained during the harmonization step.
+
+### Reference download
+
+The reference files are downloaded with:
+
+`scripts/reference_1000genomes.sh`
+
+The following PLINK 2 files are obtained:
+
+- `all_phase3.pgen.zst` — genotype data
+- `all_phase3.pvar.zst` — variant information
+- `all_phase3.psam` — sample information
+
+The compressed `.pgen.zst` file is decompressed using:
+
+`scripts/decompress_1000genomes.sh`
+
+This produces:
+
+`reference/1kg/all_phase3.pgen`
+
+The `.pvar.zst` file does not need to be decompressed because PLINK 2 can read
+the compressed variant file directly.
+
+### Reference validation
+
+The downloaded reference dataset is checked with:
+
+`scripts/check_1000genomes.sh`
+
+PLINK 2 successfully loaded:
+
+- 2,504 individuals
+- 84,805,772 variants
+
+Allele frequencies were calculated successfully, confirming that the genotype,
+variant and sample files can be read together correctly.
+
+The allele-frequency calculation at this stage is primarily used as a
+validation step rather than as a final population analysis.
+
+### Planned use
+
+The reference panel will be used in the following workflow:
+
+1. Convert the FamilyTreeDNA sample to PLINK 2 format.
+2. Identify variants shared between the sample and the reference panel.
+3. Check genomic positions and allele compatibility.
+4. Remove incompatible or ambiguous variants where necessary.
+5. Combine the sample with the reference population dataset.
+6. Apply population-genetics QC and LD pruning.
+7. Perform PCA using the reference populations.
+8. Compare the position of the FamilyTreeDNA sample with known population
+   clusters.
+
+PCA will be interpreted as a population-genetic similarity analysis rather than
+as a direct ancestry-percentage estimate.
+
+### Software
+
+The reference dataset uses the PLINK 2 PGEN format. PLINK 2 is therefore used
+for reference processing and subsequent population analyses.
+
+Current version:
+
+`PLINK v2.0.0-a.7.4LM AVX2 Intel (18 Aug 2026)`
+
+Earlier preprocessing steps were initially performed with PLINK 1.9. Both
+versions are retained for reproducibility, while downstream population analysis
+uses PLINK 2.
+
+### References
+
+- PLINK 2 Resources:
+  https://www.cog-genomics.org/plink/2.0/resources
+
+- 1000 Genomes Project Phase 3:
+  https://www.internationalgenome.org/data-portal/data-collections/phase3/
+
+- The 1000 Genomes Project Consortium (2015). A global reference for human
+  genetic variation. Nature 526, 68–74.
+  https://doi.org/10.1038/nature15393
