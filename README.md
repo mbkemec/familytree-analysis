@@ -352,3 +352,18 @@ This produced:
 
 containing **581,616 variants** for downstream harmonization and population
 analysis.
+
+### Clean PLINK Datasets
+
+The filtered variant list was applied to both the FamilyTreeDNA sample and the 1000 Genomes reference panel with:
+
+`scripts/filter_datasets.sh`
+
+The script uses `results/plink/clean_variants.snplist` and creates two PLINK 2 datasets containing the same **581,616 variants**:
+
+* `results/plink/sample_clean.*` — filtered FamilyTreeDNA sample
+* `results/plink/1kg_clean.*` — filtered 1000 Genomes reference panel
+
+The reference dataset contains 2,504 individuals, while the FamilyTreeDNA dataset contains one individual.
+
+Using the same filtered variant set on both datasets ensures that downstream harmonization and population analyses are performed on directly comparable loci.
