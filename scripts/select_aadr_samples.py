@@ -1,8 +1,11 @@
 import os
 
 ind_file = "../reference/aadr/v66.p1_compatibility_HO.aadr.patch.PUB.ind"
+fam_file = "../results/aadr/aadr_master.fam"
 output_dir = "../results/aadr"
-output_file = f"{output_dir}/selected_samples.txt"
+
+samples_file = f"{output_dir}/selected_samples.txt"
+keep_file = f"{output_dir}/selected_samples.keep"
 
 os.makedirs(output_dir, exist_ok=True)
 
@@ -45,7 +48,7 @@ groups = {
     "Tajik"
 }
 
-selected = []
+selected = {}
 
 with open(ind_file) as f:
     for line in f:
@@ -55,13 +58,29 @@ with open(ind_file) as f:
         group = parts[2]
 
         if sample.endswith(".HO") and group in groups:
-            selected.append((sample, group))
+            selected[sample] = group
 
 
-with open(output_file, "w") as out:
-    for sample, group in selected:
+with open(samples_file, "w") as out:
+    for sample, group in selected.items():
         out.write(f"{sample}\t{group}\n")
 
 
+kept = 0
+
+with open(fam_file) as f, open(keep_file, "w") as out:
+    for line in f:
+        parts = line.split()
+
+        fid = parts[0]
+        iid = parts[1]
+
+        if iid in selected:
+            out.write(f"{fid}\t{iid}\n")
+            kept += 1
+
+
 print("Selected samples:", len(selected))
-print("Output:", output_file)
+print("PLINK samples found:", kept)
+print("Population file:", samples_file)
+print("PLINK keep file:", keep_file)

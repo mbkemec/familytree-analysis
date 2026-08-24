@@ -577,3 +577,68 @@ The full master dataset is retained so that the same converted reference can lat
 - Caucasus and Iranian ancient populations
 - Balkan and Near Eastern comparisons
 - other future AADR-based analyses
+
+### Modern AADR Regional Panel
+
+The selected modern West Eurasian populations were extracted from the full AADR master dataset with:
+
+`scripts/filter_aadr_modern.sh`
+
+This produced a regional reference panel containing:
+
+- 579 modern individuals
+- 276,725 SNPs
+- genotyping rate: 99.43%
+
+Shared variants between the FamilyTreeDNA sample and the AADR panel were identified with:
+
+`scripts/shared_var_aadr_mo.sh`
+
+A total of **26,869 shared SNPs** were found.
+
+Variant positions and allele compatibility were then checked with:
+
+- `scripts/check_aadr_variant_match.py`
+- `scripts/check_aadr_alleles.py`
+
+All shared variants matched in chromosome and position, and no allele mismatches were detected. After removing 57 SNPs with missing genotypes in the FamilyTreeDNA sample, the final set contained **26,812 SNPs**.
+
+The final SNP list was generated with:
+
+`scripts/clean_aadr_variants.py`
+
+The FamilyTreeDNA sample and AADR reference panel were filtered to this common set with:
+
+`scripts/filter_aadr_for_merge.sh`
+
+and merged with:
+
+`scripts/merge_aadr_modern.sh`
+
+The merged regional dataset contains:
+
+- 580 individuals
+- 26,812 variants
+- genotyping rate: 99.70%
+
+### AADR LD Pruning
+
+LD pruning was performed with:
+
+`scripts/aadr_ld_prune.sh`
+
+using:
+
+`--indep-pairwise 50 5 0.2`
+
+This reduced redundancy among correlated SNPs before PCA.
+
+Results:
+
+- Variants before pruning: 26,812
+- Variants removed: 3,193
+- Variants retained: 23,619
+
+The retained SNP list is stored in:
+
+`results/aadr/aadr_ld_pruned.prune.in`
