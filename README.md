@@ -367,3 +367,21 @@ The script uses `results/plink/clean_variants.snplist` and creates two PLINK 2 d
 The reference dataset contains 2,504 individuals, while the FamilyTreeDNA dataset contains one individual.
 
 Using the same filtered variant set on both datasets ensures that downstream harmonization and population analyses are performed on directly comparable loci.
+
+### Dataset Merge
+
+The cleaned FamilyTreeDNA sample and 1000 Genomes reference datasets were merged with:
+
+`scripts/merge_datasets.sh`
+
+Because PLINK 2 non-concatenating merge is still under development, the cleaned PLINK 2 datasets are first converted to BED/BIM/FAM format and merged with PLINK 1.9.
+
+After filtering to biallelic A/C/G/T SNPs, the final merged dataset contains:
+
+- 2,505 individuals
+- 581,397 variants
+- Genotyping rate: 99.9998%
+
+The merged dataset is stored as:
+
+`results/plink/merged.*`

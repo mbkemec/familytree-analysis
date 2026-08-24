@@ -14,7 +14,9 @@ with open(position_file) as f:
         bad_positions.add(rsid)
 
 
-ambiguous = set()
+keep = set()
+ambiguous = 0
+non_biallelic = 0
 
 with open(ref_file) as f:
     for line in f:
@@ -29,27 +31,34 @@ with open(ref_file) as f:
 
         alleles = {ref, alt}
 
+        if rsid in bad_positions:
+            continue
+
+        if len(alleles) != 2:
+            non_biallelic += 1
+            continue
+
+        if ref not in "ACGT" or alt not in "ACGT":
+            non_biallelic += 1
+            continue
+
         if alleles == {"A", "T"} or alleles == {"C", "G"}:
-            ambiguous.add(rsid)
+            ambiguous += 1
+            continue
 
+        keep.add(rsid)
 
-kept = 0
-removed = 0
 
 with open(shared_file) as f, open(output_file, "w") as out:
     for line in f:
         rsid = line.strip()
 
-        if rsid in bad_positions or rsid in ambiguous:
-            removed += 1
-            continue
-
-        out.write(rsid + "\n")
-        kept += 1
+        if rsid in keep:
+            out.write(rsid + "\n")
 
 
 print("Position mismatches removed:", len(bad_positions))
-print("Ambiguous variants removed:", len(ambiguous))
-print("Variants kept:", kept)
-print("Total removed:", removed)
+print("Ambiguous variants removed:", ambiguous)
+print("Non-biallelic/non-SNP variants removed:", non_biallelic)
+print("Variants kept:", len(keep))
 print("Output:", output_file)
