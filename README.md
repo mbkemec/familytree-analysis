@@ -739,3 +739,230 @@ Several limitations should be considered:
 - Euclidean distances in PCA space are used here as exploratory similarity measures rather than formal measures of genetic ancestry.
 
 For these reasons, PCA is used primarily as an exploratory population-structure step. More formal ancestry modelling using ancient reference populations and f-statistics-based methods is planned as a subsequent stage of the pipeline.
+
+## Ancient Reference Analysis
+
+Following the modern-reference PCA analysis, a separate ancient-reference workflow was constructed using ancient individuals from the AADR dataset.
+
+The purpose of this stage is to compare the target sample with temporally and geographically relevant ancient populations while keeping the ancient analysis separate from the modern reference panel.
+
+### Ancient Population Inspection
+
+Ancient population labels available in the AADR dataset were first inspected using:
+
+```bash
+python3 scripts/inspect_aadr_ancient.py
+```
+
+The script summarizes the ancient groups represented in the dataset and writes the complete group list to:
+
+```text
+results/aadr/ancient_groups.txt
+```
+
+This inspection was used to identify ancient populations relevant to Anatolia, the Caucasus, Iran, Mesopotamia, the Eurasian Steppe, Central Asia, and Mongolia.
+
+### Ancient Sample Selection
+
+Ancient individuals were selected from the AADR annotation metadata using:
+
+```bash
+python3 scripts/select_aadr_ancient_samples.py
+```
+
+The selection procedure applies several filters:
+
+- Samples must fall within the defined ancient date range of 300–12,000 years BP.
+- Samples must belong to geographic regions relevant to the analysis.
+- Samples must have sufficient coverage on the AADR Compatibility Human Origins SNP set.
+- Samples failing AADR quality-control criteria are excluded.
+- A maximum of five individuals per AADR `Group_ID` is retained to reduce strong representation imbalance between archaeological groups.
+
+The final ancient reference panel contains:
+
+- **1,276 ancient individuals**
+- **533 unique AADR groups**
+
+The selected individuals represent ancient populations from Anatolia, the South Caucasus, North Caucasus, Iran, Mesopotamia, the Eurasian Steppe, Central Asia, and Mongolia.
+
+Selection metadata and PLINK-compatible sample lists are written to:
+
+```text
+results/aadr/selected_ancient_samples.tsv
+results/aadr/selected_ancient_samples.keep
+results/aadr/selected_ancient_groups.txt
+```
+
+### Ancient Dataset Extraction
+
+The selected ancient individuals are extracted from the complete AADR PLINK dataset using:
+
+```bash
+./scripts/filter_aadr_ancient.sh
+```
+
+This produces an ancient reference dataset containing:
+
+- **1,276 individuals**
+- **276,725 variants**
+
+Output:
+
+```text
+results/aadr/aadr_ancient.bed
+results/aadr/aadr_ancient.bim
+results/aadr/aadr_ancient.fam
+```
+
+### Shared Variant Detection
+
+Variants shared between the cleaned FTDNA sample and the ancient AADR panel are identified using:
+
+```bash
+./scripts/shared_var_aadr_ancient.sh
+```
+
+The cleaned FTDNA dataset contains 581,397 variants.
+
+A total of **26,869 variants** are shared by variant identifier with the ancient AADR panel before additional compatibility and missingness filtering.
+
+### Ancient Variant Missingness
+
+Ancient DNA datasets contain substantially more missing genotype data than modern reference datasets. Variant-level missingness across the shared SNP set is therefore inspected separately using:
+
+```bash
+./scripts/inspect_aadr_ancient_missingness.sh
+```
+
+The analysis evaluates call-rate distributions across the ancient panel and reports the number of variants retained under several possible call-rate thresholds.
+
+A minimum ancient-panel call rate of **50%** was selected as a compromise between marker retention and genotype completeness.
+
+### Variant Compatibility and Final Ancient SNP Set
+
+The ancient workflow reuses the previously validated AADR–FTDNA variant set, for which genomic positions and allele compatibility were checked before merging.
+
+The final ancient merge datasets are prepared using:
+
+```bash
+./scripts/filter_aadr_ancient_for_merge.sh
+```
+
+The script:
+
+1. restricts the ancient dataset to variants compatible with the FTDNA sample,
+2. calculates ancient-panel variant missingness,
+3. retains variants with at least 50% call rate in the ancient panel,
+4. creates matching ancient AADR and FTDNA PLINK datasets.
+
+After filtering, the final shared dataset contains:
+
+- **20,900 variants**
+- **1,276 ancient reference individuals**
+- **1 FTDNA target sample**
+
+### Ancient Dataset Merge
+
+The target sample is merged with the filtered ancient reference panel using:
+
+```bash
+./scripts/merge_aadr_ancient.sh
+```
+
+The resulting dataset contains:
+
+- **1,277 individuals**
+- **20,900 variants**
+
+Output:
+
+```text
+results/aadr/aadr_ancient_merged.bed
+results/aadr/aadr_ancient_merged.bim
+results/aadr/aadr_ancient_merged.fam
+```
+
+### LD Pruning
+
+Variants in linkage disequilibrium are removed before PCA using:
+
+```bash
+./scripts/aadr_ancient_ld_prune.sh
+```
+
+PLINK is run with:
+
+```text
+--indep-pairwise 50 5 0.2
+```
+
+Of the 20,900 variants entering this stage:
+
+- **20,542 variants are retained**
+- **358 variants are removed**
+
+The retained marker list is written to:
+
+```text
+results/aadr/aadr_ancient_ld_pruned.prune.in
+```
+
+### Ancient PCA
+
+Principal component analysis is performed on the merged ancient AADR and FTDNA dataset using:
+
+```bash
+./scripts/aadr_ancient_pca.sh
+```
+
+Twenty principal components are calculated from the LD-pruned marker set.
+
+The PCA output is written to:
+
+```text
+results/aadr/aadr_ancient_pca.eigenvec
+results/aadr/aadr_ancient_pca.eigenval
+```
+
+### Ancient PCA Distance Analysis
+
+Ancient individuals and groups closest to the target sample in multidimensional PCA space are explored using:
+
+```bash
+python3 scripts/analyze_aadr_ancient_pca.py
+```
+
+Distances are calculated using the first ten principal components rather than relying only on a two-dimensional PC1–PC2 projection.
+
+The analysis generates:
+
+```text
+results/aadr/aadr_ancient_pca_nearest_individuals.tsv
+results/aadr/aadr_ancient_pca_nearest_groups.tsv
+results/aadr/aadr_ancient_pca_top100_region_counts.tsv
+results/aadr/aadr_ancient_pca_annotated.tsv
+```
+
+The resulting tables preserve AADR archaeological group identifiers, locality information, approximate dates, and analytical geographic regions for downstream interpretation.
+
+Individual ancestry results are intentionally not reported in this repository README.
+
+### Interpretation and Limitations of the Ancient Analysis
+
+Ancient-reference PCA provides exploratory information about genetic similarity between the target sample and ancient individuals represented in the selected AADR panel. It should not be interpreted as a direct estimate of ancestry proportions.
+
+Important limitations include:
+
+- Ancient DNA contains substantially more missing genotype data than modern genotype datasets.
+- Ancient populations are unevenly represented across archaeological periods and geographic regions.
+- AADR `Group_ID` labels describe archaeological or analytical groupings and should not automatically be interpreted as ethnic identities.
+- Geographic labels used by the pipeline are analytical categories created for sample selection and summarization.
+- Genetic similarity to an ancient individual does not demonstrate direct descent from that individual or archaeological population.
+- PCA distances depend on the individuals, SNPs, filtering thresholds, and principal components included in the analysis.
+- Groups represented by only one or a few ancient individuals require particularly cautious interpretation.
+- Modern individuals can share genetic drift with multiple ancient populations that were themselves genetically related.
+- PCA proximity does not provide mixture coefficients or ancestry percentages.
+
+The ancient PCA analysis is therefore treated as a hypothesis-generating step for identifying potentially informative ancient reference populations.
+
+Formal population-genetic analyses using f-statistics and ADMIXTOOLS-based ancestry modelling are planned as subsequent stages of the pipeline.
