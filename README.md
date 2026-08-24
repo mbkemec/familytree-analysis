@@ -385,3 +385,31 @@ After filtering to biallelic A/C/G/T SNPs, the final merged dataset contains:
 The merged dataset is stored as:
 
 `results/plink/merged.*`
+
+### LD Pruning
+
+Linkage disequilibrium pruning was performed with:
+
+`scripts/ld_prune.sh`
+
+PLINK was run with:
+
+`--indep-pairwise 50 5 0.2`
+
+LD pruning reduces redundancy by removing highly correlated SNPs. This prevents genomic regions containing many linked variants from having too much influence on PCA.
+
+The parameters mean:
+
+* `50` — analyze variants in windows of 50 SNPs
+* `5` — move the window forward by 5 SNPs at each step
+* `0.2` — remove one SNP from pairs with linkage disequilibrium above r² = 0.2
+
+Results:
+
+* Variants before pruning: 581,397
+* Variants removed: 240,553
+* Variants retained: 340,844
+
+The retained SNP list is stored in:
+
+`results/plink/ld_pruned.prune.in`
