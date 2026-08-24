@@ -413,3 +413,65 @@ Results:
 The retained SNP list is stored in:
 
 `results/plink/ld_pruned.prune.in`
+
+
+### Global PCA with 1000 Genomes
+
+Principal Component Analysis (PCA) was performed with:
+
+`scripts/pca.sh`
+
+The analysis used the **340,844 LD-pruned SNPs** from the merged dataset containing **2,504 1000 Genomes reference individuals and one FamilyTreeDNA sample (2,505 individuals total)**.
+
+The first 20 principal components were calculated with:
+
+`--pca 20`
+
+The main outputs are:
+
+- `results/plink/pca.eigenvec` — principal component scores for each individual
+- `results/plink/pca.eigenval` — eigenvalues of the principal components
+
+Population and superpopulation labels from the 1000 Genomes metadata were added to the PCA results with:
+
+`scripts/prepare_pca.py`
+
+This produced:
+
+`results/plink/pca_with_populations.tsv`
+
+The global PCA was first visualized by superpopulation with:
+
+`scripts/plot_pca.py`
+
+The reference individuals were grouped into the five 1000 Genomes superpopulations:
+
+- AFR — African
+- AMR — Admixed American
+- EAS — East Asian
+- EUR — European
+- SAS — South Asian
+
+A more detailed population-level visualization was then generated with:
+
+`scripts/pca_populations.py`
+
+The script produces three PCA projections:
+
+- PC1 vs PC2
+- PC1 vs PC3
+- PC2 vs PC3
+
+These plots allow the FamilyTreeDNA sample (`SAMPLE1`) to be compared with the individual 1000 Genomes populations rather than only the broader superpopulation groups.
+
+### Interpretation and Limitation
+
+The global PCA places `SAMPLE1` within the broader West Eurasian part of the genetic variation represented by the 1000 Genomes panel, while the sample does not fall directly within one of the available reference population clusters.
+
+This result should not be interpreted as ancestry proportions. PCA describes genetic similarity and variation relative to the populations included in the reference panel.
+
+In particular, the 1000 Genomes Phase 3 panel does not contain a dedicated Turkish or Anatolian population. Therefore, populations such as Anatolian, Balkan, Caucasian and other Near Eastern groups are not adequately represented in this PCA space.
+
+For this reason, the 1000 Genomes analysis is used primarily as a **global population comparison and validation of the analysis pipeline**, rather than as the final regional ancestry analysis.
+
+The next stage will use a more detailed **West Eurasian reference panel**, with particular emphasis on populations from Anatolia, the Balkans, the Caucasus, Southern Europe and the Near East.
