@@ -475,3 +475,105 @@ In particular, the 1000 Genomes Phase 3 panel does not contain a dedicated Turki
 For this reason, the 1000 Genomes analysis is used primarily as a **global population comparison and validation of the analysis pipeline**, rather than as the final regional ancestry analysis.
 
 The next stage will use a more detailed **West Eurasian reference panel**, with particular emphasis on populations from Anatolia, the Balkans, the Caucasus, Southern Europe and the Near East.
+
+## Regional Reference Panel with AADR
+
+For more detailed ancestry analysis around Anatolia and neighboring regions, the project uses the Allen Ancient DNA Resource (AADR).
+
+The selected release is:
+
+**AADR v66.p1 (June 8, 2026)**
+
+The analysis uses the:
+
+**v66.p1 compatibility Human Origins dataset**
+
+This dataset was selected because it contains modern Human Origins samples from populations relevant to Anatolia, the Balkans, the Caucasus, Iran and the Near East, while remaining compatible with the hg19/GRCh37 coordinate system used by the FamilyTreeDNA sample.
+
+### AADR Data Download
+
+Metadata and SNP information are downloaded with:
+
+`scripts/reference_aadr_metadata.sh`
+
+The script downloads:
+
+- `v66.p1_compatibility_HO.aadr.PUB.anno`
+- `v66.p1_compatibility_HO.aadr.patch.PUB.ind`
+- `v66.p1_compatibility_HO.aadr.patch.PUB.snp`
+
+The genotype dataset is downloaded separately with:
+
+`scripts/reference_aadr_genotypes.sh`
+
+which downloads:
+
+- `v66.p1_compatibility_HO.aadr.patch.PUB.geno`
+
+The AADR reference files are stored in:
+
+`reference/aadr/`
+
+### Modern Population Inspection
+
+Modern Human Origins populations were inspected with:
+
+`scripts/inspect_aadr_populations.py`
+
+The script reads the AADR `.ind` file and counts samples with the `.HO` suffix.
+
+Relevant populations include groups such as:
+
+- Turkish
+- Turkish_Trabzon
+- Kurd
+- Iranian
+- Armenian
+- Georgian
+- Azeri
+- Greek
+- Bulgarian
+- Cypriot
+- Assyrian
+- Druze
+- Palestinian
+- Lebanese
+- Syrian
+- Jordanian
+- Caucasus populations
+- Southern European populations
+- Central Asian populations
+
+A regional modern panel was then defined with:
+
+`scripts/select_aadr_samples.py`
+
+This selected **579 modern individuals** for the West Eurasian reference panel.
+
+### AADR Format Conversion
+
+AADR distributes the compatibility Human Origins genotype dataset in binary **TGENO** format.
+
+The complete dataset was converted once into PLINK BED/BIM/FAM format with:
+
+`scripts/convert_aadr.sh`
+
+The script uses `convertf` from DReichLab AdmixTools.
+
+The resulting master reference dataset contains:
+
+- 27,594 individuals
+- 276,725 SNPs
+- overall genotyping rate: 62.3%
+
+The master dataset is stored as:
+
+`results/aadr/aadr_master.*`
+
+The full master dataset is retained so that the same converted reference can later be reused for:
+
+- modern regional ancestry analysis
+- ancient Anatolian comparisons
+- Caucasus and Iranian ancient populations
+- Balkan and Near Eastern comparisons
+- other future AADR-based analyses
