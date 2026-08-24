@@ -642,3 +642,100 @@ Results:
 The retained SNP list is stored in:
 
 `results/aadr/aadr_ld_pruned.prune.in`
+
+### PCA-based modern population comparison
+
+After merging the target sample with the selected modern AADR reference panel, the merged dataset was LD-pruned before principal component analysis (PCA).
+
+LD pruning was performed with PLINK using:
+
+```bash
+plink \
+    --bfile results/aadr/aadr_merged \
+    --indep-pairwise 50 5 0.2 \
+    --out results/aadr/aadr_ld_pruned
+```
+
+From the 26,812 shared variants in the merged dataset, 23,619 variants were retained after LD pruning.
+
+PCA was then performed on the LD-pruned dataset:
+
+```bash
+plink \
+    --bfile results/aadr/aadr_merged \
+    --extract results/aadr/aadr_ld_pruned.prune.in \
+    --pca 20 \
+    --allow-no-sex \
+    --out results/aadr/aadr_pca
+```
+
+The resulting eigenvectors were combined with AADR population labels using:
+
+```bash
+python3 scripts/prepare_aadr_pca.py
+```
+
+This produces a population-annotated PCA table that can be used for downstream visualization and quantitative comparison.
+
+### PCA visualization
+
+Two scripts are used to inspect the PCA results:
+
+- `plot_aadr_pca.py` — generates broad PCA views of the selected modern West Eurasian reference panel.
+- `plot_aadr_pca_zoom.py` — generates local PCA views around the target sample using a reduced set of relevant reference populations.
+
+Multiple combinations of the first principal components are visualized rather than relying on a single two-dimensional projection.
+
+The plots are intended as exploratory representations of population structure. Proximity on a PCA plot should not be interpreted as an ancestry percentage or as evidence of direct descent from a particular population.
+
+### Quantitative PCA proximity analysis
+
+To complement visual inspection of the PCA plots, quantitative proximity metrics are calculated with:
+
+```bash
+python3 scripts/analyze_aadr_pca_distances.py
+```
+
+The analysis currently uses the first 10 principal components and performs three complementary comparisons:
+
+1. **Individual nearest-neighbour analysis**
+
+   Calculates Euclidean distances between the target sample and individual reference samples in PC1–PC10 space.
+
+2. **Population centroid analysis**
+
+   Calculates the centroid of each reference population in PC1–PC10 space and measures the distance between the target sample and each population centroid.
+
+3. **Robust population proximity analysis**
+
+   Calculates population-level proximity using the nearest subset of individuals from each population. This reduces reliance on a single individual or on the centroid of a heterogeneous population.
+
+The script also summarizes the population labels represented among the nearest individual reference samples.
+
+Generated files include:
+
+```text
+results/aadr/aadr_pca_nearest_individuals.tsv
+results/aadr/aadr_pca_population_centroids.tsv
+results/aadr/aadr_pca_population_proximity.tsv
+results/aadr/aadr_pca_nearest_population_counts.tsv
+```
+
+These files contain sample-specific analytical results and are treated as local analysis outputs rather than project-level conclusions.
+
+### Interpretation and limitations
+
+The modern-reference PCA analysis is designed to provide population-genetic context for the target sample rather than categorical ancestry assignments.
+
+Several limitations should be considered:
+
+- PCA coordinates describe genetic variation within the specific reference dataset used in the analysis.
+- Results depend on the populations and individuals included in the reference panel.
+- Population sample sizes are unequal.
+- Two-dimensional PCA plots display only a subset of the information contained in the full PCA space.
+- PCA proximity is not equivalent to ancestry proportion.
+- A nearest reference population should not be interpreted as the population from which the sample directly descends.
+- Population labels represent reference groups in the AADR dataset and should not be interpreted as discrete biological categories.
+- Euclidean distances in PCA space are used here as exploratory similarity measures rather than formal measures of genetic ancestry.
+
+For these reasons, PCA is used primarily as an exploratory population-structure step. More formal ancestry modelling using ancient reference populations and f-statistics-based methods is planned as a subsequent stage of the pipeline.
